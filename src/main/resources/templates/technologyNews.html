@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th =  "http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="main_layout.html">
+<div layout:fragment="~{siteContent}">
+    <div class="container mt-3">
+        <div class="card container shadow  my-2">
+            <div class="px-4 py-3 text-center ">
+                <div class="btn-group">
+                    <a th:href="@{'/'}" class="btn btn-dark active">All news</a>
+                    <a th:href="@{'/sport_news'}" class="btn btn-dark">Sport</a>
+                    <a th:href="@{'/political_news'}" class="btn btn-dark">Political</a>
+                    <a th:href="@{'/business_news'}" class="btn btn-dark">Business</a>
+                    <a th:href="@{'/finance_news'}" class="btn btn-dark">Finance</a>
+                    <a th:href="@{'/media_news'}" class="btn btn-dark">Media</a>
+                    <a th:href="@{'/science_news'}" class="btn btn-dark">Science</a>
+                    <a th:href="@{'/art_news'}" class="btn btn-dark">Art</a>
+                    <a th:href="@{'/technology_news'}" class="btn btn-dark">Technology</a>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3" id="postListBody">
+        </div>
+        <script type="text/javascript">
+
+            let category = "Technology";
+
+            loadPosts();
+
+
+            function loadPosts(){
+                const  httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/news_category_posts/"+category, true)
+
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        let postList = JSON.parse(httpRequest.responseText);
+                        let cardContent = "";
+
+                        for(let i = 0; i<postList.length; i++){
+                            const post = postList[i];
+                            const user = post.user;
+
+
+                            cardContent += '<div class="card container shadow-lg  my-3" >'
+                            cardContent += '<div class="row px-4 py-3">'
+                            cardContent += '<div class="col-8">'
+                            cardContent += '<a class="text-decoration-none text-reset" ' +
+                                'href="/post_details/'+ post.id +'">'
+                            cardContent += '<h3>' + post.title + '</h3>'
+                            cardContent += '</a>'
+                            cardContent += '</div>'
+                            cardContent += '<div class="col-4 text-secondary text-end">'
+                            cardContent += '<span> Post by '+ user.fullName +' </span>'
+                            cardContent += '</div>'
+                            cardContent += '</div>'
+                            cardContent += '<div class="row px-4 pt-1 pb-2 ">'
+                            cardContent += '<div class="col-12 text-secondary text-end ">'
+                            cardContent += '<span > Post at '+ post.postTime + '</span>'
+                            cardContent += '</div>'
+                            cardContent += '</div>'
+                            cardContent += '</div>'
+
+                        }
+
+                        document.getElementById("postListBody").innerHTML = cardContent;
+                    }
+                }
+                httpRequest.send();
+            }
+        </script>
+    </div>
+</div>
+</html>

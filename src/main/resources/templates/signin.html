@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th =  "http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="main_layout.html">
+<div layout:fragment="~{siteContent}">
+    <div class="container mt-3">
+        <div class="alert alert-danger" role="alert" th:if = "${param.autherror}">
+            Incorrect email or password
+        </div>
+        <form th:action="@{'/to-enter'}" method="post">
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">EMAIL</label>
+                    <input type="email" class="form-control" required name="user_email">
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">PASSWORD</label>
+                    <input type="password" class="form-control" required name="user_password">
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <button class="btn btn-primary btn-sm">SIGN IN</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</html>

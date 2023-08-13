@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th =  "http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="main_layout.html"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div layout:fragment="~{siteContent}">
+    <div class="container mt-3">
+        <input type="hidden" th:value="${#authentication.principal.id}" id="userSessionId">
+        <input type="hidden" th:value="${postId}" id="postId">
+        <div class="mt-3 " id="postBody">
+        </div>
+        <div class="modal fade" id="editPostModal" data-bs-backdrop="static"
+             data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl ">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Post</h1>
+                        <button type="button" class="btn-close"
+                                data-bs-dismiss="modal" aria-label="Close">
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="postTime">
+                        <input type="hidden" id="userId">
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <label>Title: </label>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <input type="text" class="form-control "  id="postTitle">
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <label>Category: </label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <select class="form-control" id="categoryListBody">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label>Content: </label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <textarea class="form-control " style="height: 180px"
+                                          id="postContent"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger"
+                                onclick="deletePost()">DELETE</button>
+                        <button type="button" class="btn btn-outline-primary"
+                                onclick="updatePost()">UPDATE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="commentModal" tabindex="-1"
+             aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg ">
+                <div class="modal-content">
+                    <div class="container">
+                        <div class="ms-3">
+                            <div class="row mt-3">
+                                <div class="col-11">
+                                    <strong>Comment: </strong>
+                                </div>
+                            </div>
+                            <input type="hidden" id="commentPostId">
+                            <div class="row mt-2">
+                                <div class="col-11">
+                                <textarea class="form-control " required placeholder="Inset comment"
+                                          style="height: 100px" id="comment"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <tbody id="commentListBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-primary"
+                                onclick="addComment()">COMMENT</button>
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <script type="text/javascript">
+
+            loadPosts();
+
+            function loadPosts(){
+
+
+                let postId = document.getElementById("postId")
+                let userSessionId = document.getElementById("userSessionId");
+
+                const  httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/posts/"+postId.value, true)
+
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        let post = JSON.parse(httpRequest.responseText);
+                        let user = post.user;
+
+                        const findrole = "ROLE_ADMIN";
+                        const userSessionRole = roleList.find(roleList => roleList.role === findrole);
+
+                        let cardContent = '';
+
+                        cardContent += '<div class="card container shadow-lg  my-3" >'
+                        cardContent += '<div class="row px-4 py-3">'
+                        cardContent += '<div class="col-8">'
+                        cardContent += '<h3>' + post.title + '</h3>'
+                        cardContent += '</div>'
+                        cardContent += '<div class="col-4 text-secondary text-end">'
+                        cardContent += '<span> Post by '+ user.fullName +' </span>'
+                        cardContent += '</div>'
+                        cardContent += '</div>'
+                        cardContent += '<div class = "row px-4 py-3 ">'
+                        cardContent += '<div class="col-12">'
+                        cardContent += '<p class="col-11">'+ post.content +'</p>'
+                        cardContent += '</div>'
+                        cardContent += '</div>'
+                        cardContent += '<div class="row px-4 pt-1 pb-2 text-start">'
+                        cardContent += '<div class="col-9 text-secondary ">'
+                        cardContent += '<span > Post at '+ post.postTime + '</span>'
+                        cardContent += '</div>'
+                        cardContent += '<div class="col-3 text-secondary text-end">'
+                        cardContent += '<button class="btn btn-outline-dark btn-sm mx-3 " ' +
+                            'onclick="openCommentModal('+ post.id +')">COMMENT</button>'
+                        if(user.id == userSessionId.value || userSessionRole){
+                            cardContent += '<button  class="btn btn-outline-primary btn-sm mx-3"' +
+                                'onclick="openEditPostModal('+ post.id +')">EDIT POST</button>'
+                        }
+                        cardContent += '</div>'
+                        cardContent += '</div>'
+                        cardContent += '</div>'
+
+
+                        document.getElementById("postBody").innerHTML = cardContent;
+
+
+
+                    }
+                }
+                httpRequest.send();
+            }
+
+
+
+
+            function openEditPostModal(id){
+
+
+                editPostModal = new bootstrap.Modal(document.getElementById('editPostModal'));
+
+                const  httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/posts/"+id, true);
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        let result = JSON.parse(httpRequest.responseText);
+                        let user = result.user;
+                        let category = result.newsCategory;
+                        postContent.value = result.content;
+                        postTitle.value = result.title;
+                        postTime.value = result.postTime;
+                        categoryListBody.value = category.id;
+                        userId.value = user.id;
+                        editPostModal.show();
+                    }
+                }
+                httpRequest.send();
+            }
+
+            function updatePost(){
+
+
+                let postId = document.getElementById("postId");
+                let postContent = document.getElementById("postContent");
+                let postTitle = document.getElementById("postTitle");
+                let postTime = document.getElementById("postTime");
+                let userId = document.getElementById("userId");
+                let category = document.getElementById("categoryListBody");
+
+                if(postContent.value!="" && postTitle.value!=""){
+
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("PUT", "/posts", true);
+                    httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                    httpRequest.onreadystatechange = function (){
+                        if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                            loadPosts();
+                            editPostModal.hide();
+                        }
+                    };
+
+                    let body = {
+                        "id": postId.value,
+                        "title": postTitle.value,
+                        "content": postContent.value,
+                        "postTime": postTime.value,
+                        "newsCategory":{
+                            "id": category.value,
+                        },
+                        "user": {
+                            "id": userId.value
+                        }
+                    };
+
+                    body = JSON.stringify(body);
+                    httpRequest.send(body);
+
+                }
+
+
+            }
+
+
+            function deletePost(){
+
+
+                let approve = confirm("Are you sure?");
+
+                if (approve){
+
+                    let postId = document.getElementById("postId");
+
+
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("DELETE", "/posts/"+postId.value, true);
+
+                    httpRequest.onreadystatechange = function (){
+                        if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                            editPostModal.hide();
+                            window.location.replace("/profile");
+
+                        }
+                    };
+
+                    httpRequest.send();
+
+
+                }
+
+            }
+
+
+
+            function openCommentModal(id){
+
+                commentModal = new bootstrap.Modal(document.getElementById('commentModal'));
+
+                commentPostId.value = id
+
+
+                loadComment(id)
+
+            }
+
+            function loadComment(id){
+
+                let userSessionId = document.getElementById("userSessionId");
+
+                const  httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/comments/"+id, true);
+                httpRequest.onreadystatechange = function (){
+
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        let commentList = JSON.parse(httpRequest.responseText);
+
+                        const findrole = "ROLE_ADMIN";
+                        const userSessionRole = roleList.find(roleList => roleList.role === findrole);
+
+                        let commentContent = "";
+
+                        for(let i = 0; i<commentList.length; i++){
+                            const comment = commentList[i];
+                            const user = comment.user;
+                            const post = comment.post;
+
+                            commentContent += '<tr>'
+                            commentContent += '<td>'
+                            commentContent += '<ol class="list-group list-group">'
+                            commentContent += '<li class="list-group-item d-flex ' +
+                                'justify-content-between align-items-start">'
+                            commentContent += '<div class="ms-2 me-auto">'
+                            commentContent += ' <div class="fw-bold">'+ user.fullName + '</div>'+ comment.comment
+                            commentContent += '</div>'
+                            commentContent += ' <span class="text-secondary">'+ comment.commentTime +'</span>'
+                            commentContent += '<div class="ms-2">'
+                            if(user.id == userSessionId.value || userSessionRole){
+                                commentContent += '<button class="btn btn-outline-danger btn-sm" ' +
+                                    'onclick="deleteComment('+comment.id+', '+post.id+')">Delete</button>'
+                            }
+                            commentContent += '</div>'
+                            commentContent += '</li>'
+                            commentContent += '</ol>'
+                            commentContent += '</td>'
+                            commentContent += '</tr>'
+
+                        }
+                        document.getElementById("commentListBody").innerHTML = commentContent;
+                        commentModal.show();
+                    }
+                }
+                httpRequest.send();
+            }
+
+
+
+            function addComment() {
+
+
+                let userSessionId = document.getElementById("userSessionId");
+                let comment = document.getElementById("comment");
+                let postId =  document.getElementById("commentPostId");
+
+                if(comment.value!=""){
+
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("POST", "/comments", true);
+                    httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                            comment.value = "";
+                            loadComment(postId.value)
+
+                        }
+                    }
+                    let body = {
+                        "comment": comment.value,
+                        "post": {
+                            "id": postId.value
+                        },
+                        "user": {
+                            "id": userSessionId.value
+                        },
+
+                    };
+
+                    body = JSON.stringify(body);
+                    httpRequest.send(body);
+
+                }
+
+            }
+
+
+            function deleteComment(commentId, postId){
+
+                let approve = confirm("Are you sure?");
+
+                if (approve){
+
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("DELETE", "/comments/"+commentId, true);
+
+                    httpRequest.onreadystatechange = function (){
+                        if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                            loadComment(postId);
+                        }
+                    };
+
+                    httpRequest.send();
+
+                }
+
+            }
+
+            loadNewsCategories();
+
+            function loadNewsCategories(){
+                const  httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/news_categories", true)
+
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        let categoryList = JSON.parse(httpRequest.responseText);
+
+                        let modalContent = "";
+
+                        for(let i = 0; i<categoryList.length; i++){
+                            const category = categoryList[i];
+
+
+                            modalContent += '<option th:selected="${}" value="'+ category.id +'">' +
+                                ''+ category.name +'</option>'
+
+
+                        }
+                        document.getElementById("categoryListBody").innerHTML = modalContent;
+                    }
+                }
+                httpRequest.send();
+            }
+
+            let userSessionId = document.getElementById("userSessionId");
+
+            getUser(userSessionId.value)
+            function getUser(id){
+
+                const  httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/users/"+id, true);
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        let result = JSON.parse(httpRequest.responseText);
+                        roleList  = result.permissions
+
+                    }
+                }
+                httpRequest.send();
+            }
+
+        </script>
+    </div>
+</div>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th =  "http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="main_layout.html">
+<div layout:fragment="~{siteContent}">
+    <div class="container mt-3">
+        <div class="alert alert-danger" role="alert" th:if = "${param.emailerror}">
+            Email is busy
+        </div>
+        <div class="alert alert-success" role="alert" th:if = "${param.success}">
+            Success!
+        </div>
+        <form th:action="@{'/to_update_profile'}" method="post">
+            <input type="hidden" th:value="${profileUserId}"
+                   name="user_id" id="userId">
+            <div>
+                <div class="mb-3">
+                    <label class="form-label">EMAIL</label>
+                    <input type="email" class="form-control"
+                           required name="user_email" id="userEmail">
+                </div>
+            </div>
+            <div>
+                <div class="mb-3">
+                    <label class="form-label">FULL NAME</label>
+                    <input type="text" class="form-control"
+                           required name="user_fullName" id="userFullName">
+                </div>
+            </div>
+            <div>
+                <div class="mb-3">
+                    <label class="form-label">BIRTHDATE</label>
+                    <input type="date" class="form-control"
+                           required name="user_birthdate" id="userBirthdate">
+                </div>
+            </div>
+            <div>
+                <div class="mb-3">
+                    <label class="form-label">ABOUT ME</label>
+                    <textarea class="form-control"
+                              required name="user_bio" id="userBio"></textarea>
+                </div>
+            </div>
+            <div>
+                <div class="mb-3">
+                    <button class="btn btn-outline-primary btn-sm">UPDATE PROFILE</button>
+                </div>
+            </div>
+            <div>
+                <div class="mb-3" th:if="${profileUserId}==${#authentication.principal.id}">
+                    <button th:if="${#authentication.principal.deleteApplication == false}"
+                            type="button" class="btn btn-outline-danger btn-sm" onclick="toDeleteUser()">
+                        SEND APPLICATION FOR DElETE
+                    </button>
+                    <button th:if="${#authentication.principal.deleteApplication == true}"
+                            type="button" class="btn btn-outline-danger btn-sm" onclick="toDeleteUser()">
+                        CANCEL APPLICATION FOR DElETE
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript">
+
+        userId = document.getElementById("userId")
+
+        getUser(userId.value)
+        function getUser(id){
+
+            const  httpRequest = new XMLHttpRequest();
+            httpRequest.open("GET", "/users/"+id, true);
+            httpRequest.onreadystatechange = function (){
+                if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                    let result = JSON.parse(httpRequest.responseText);
+                    userEmail.value = result.email;
+                    userFullName.value = result.fullName;
+                    userBirthdate.value = result.birthdate;
+                    userBio.value = result.bio;
+                     deleteApplication = result.deleteApplication;
+                }
+            }
+            httpRequest.send();
+        }
+
+        function toDeleteUser(){
+
+
+            let approve = confirm("Are you sure?");
+
+            if (approve){
+
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("PUT", "/users", true);
+                httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200){
+                        getUser(userId.value)
+                        window.location.replace("/sign-out")
+                    }
+                };
+                let body;
+
+                if (deleteApplication==false) {
+                    body = {
+                        "id": userId.value,
+                        "deleteApplication": true
+                    };
+                }else {
+                    body = {
+                        "id": userId.value,
+                        "deleteApplication": false
+
+                    }
+                }
+
+                body = JSON.stringify(body);
+                httpRequest.send(body);
+
+            }
+        }
+
+    </script>
+</div>
+</html>
