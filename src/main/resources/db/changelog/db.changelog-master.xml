@@ -1,7 +1,8 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <changeSet id="2023_08_13_create_init_tables" author="miras">
         <sqlFile
@@ -14,6 +15,7 @@
                 splitStatements="true"
         />
     </changeSet>
+
     <changeSet id="2023_08_13_create_init_data" author="miras">
         <sqlFile
                 dbms="mysql"
@@ -25,5 +27,4 @@
                 splitStatements="true"
         />
     </changeSet>
-
 </databaseChangeLog>
