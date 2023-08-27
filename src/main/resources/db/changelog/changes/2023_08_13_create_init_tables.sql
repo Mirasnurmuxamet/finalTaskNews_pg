@@ -1,84 +1,70 @@
-CREATE TABLE t_permissions(
-    id bigint auto_increment,
-    role varchar(255),
-    primary key (id)
+CREATE TABLE public.t_permissions (
+                                      id bigserial PRIMARY KEY,
+                                      role varchar(255)
 );
 
-CREATE TABLE t_users(
-    id bigint auto_increment,
-    email varchar(255),
-    password varchar(255),
-    full_name varchar(255),
-    birthdate varchar(255),
-    bio text,
-    delete_application bit(1),
-    primary key (id)
+ALTER TABLE public.t_permissions
+    OWNER TO postgres;
+
+create table public.t_users(
+    id                 bigserial primary key,
+    bio                text,
+    birthdate          varchar(255),
+    delete_application boolean,
+    email              varchar(255),
+    full_name          varchar(255),
+    password           varchar(255)
 );
 
-CREATE TABLE t_users_permissions(
-    user_id bigint,
-    permissions_id bigint
+alter table public.t_users
+    owner to postgres;
+
+
+create table public.t_users_permissions
+(
+    user_id bigint references t_users(id) on delete cascade,
+    permissions_id bigint references t_permissions(id) on delete cascade
+
 );
 
-CREATE TABLE t_news_category(
-    id bigint auto_increment,
-    name varchar(255),
-    primary key (id)
+alter table public.t_users_permissions
+    owner to postgres;
+
+
+create table public.t_news_category(
+    id   bigserial primary key,
+    name varchar(255)
 );
 
-CREATE TABLE t_posts(
-    id bigint auto_increment,
-    title varchar(255),
-    content text,
-    post_time varchar(255),
-    user_id bigint,
-    news_category_id bigint,
-    primary key (id)
+alter table public.t_news_category
+    owner to postgres;
+
+
+
+create table public.t_posts
+(
+                        id bigserial primary key,
+                        title varchar(255),
+                        content text,
+                        post_time varchar(255),
+                        user_id bigint references t_users(id) on delete cascade,
+                        news_category_id bigint references t_news_category(id) on delete cascade
 );
 
-CREATE TABLE t_comments(
-    id bigint auto_increment,
-    comment text,
-    comment_time varchar(255),
-    user_id bigint,
-    post_id bigint,
-    primary key (id)
+alter table public.t_posts
+    owner to postgres;
+
+
+
+create table public.t_comments(
+                           id bigserial primary key,
+                           comment text,
+                           comment_time varchar(255),
+                           user_id bigint references t_users(id) on delete cascade,
+                           post_id bigint references t_posts(id) on delete cascade
 );
 
-ALTER TABLE t_users_permissions
-    ADD CONSTRAINT fk_users_permissions_user
-        FOREIGN KEY (user_id)
-            REFERENCES t_users(id)
-            ON DELETE CASCADE;
 
-ALTER TABLE t_users_permissions
-    ADD CONSTRAINT fk_users_permissions_permission
-        FOREIGN KEY (permissions_id)
-            REFERENCES t_permissions(id)
-            ON DELETE CASCADE;
+alter table public.t_comments
+    owner to postgres;
 
-
-ALTER TABLE t_posts
-    ADD CONSTRAINT fk_posts_user
-        FOREIGN KEY (user_id)
-            REFERENCES t_users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE t_posts
-    ADD CONSTRAINT fk_posts_category
-        FOREIGN KEY (news_category_id)
-            REFERENCES t_news_category(id)
-            ON DELETE CASCADE;
-
-
-ALTER TABLE t_comments
-    ADD CONSTRAINT fk_comments_user
-        FOREIGN KEY (user_id)
-            REFERENCES t_users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE t_comments
-    ADD CONSTRAINT fk_comments_post
-        FOREIGN KEY (post_id)
-            REFERENCES t_posts(id)
-            ON DELETE CASCADE;

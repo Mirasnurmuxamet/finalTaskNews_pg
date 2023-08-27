@@ -1,11 +1,11 @@
 INSERT INTO t_permissions(role)
-VALUE
+VALUES
     ('ROLE_USER'),
     ('ROLE_AUTHOR'),
     ('ROLE_ADMIN');
 
 INSERT INTO t_users(email, full_name, password, bio, birthdate, delete_application)
-    VALUE
+    VALUES
     ('ali@gmail.com',
      'Alizhan Turarov',
      '$2a$12$9MEEHBrZe0.ur/wmh992Au9zduD82uJjJHf5hNB/phcT4Cim34/9S',
@@ -27,7 +27,7 @@ INSERT INTO t_users(email, full_name, password, bio, birthdate, delete_applicati
 
 
 INSERT INTO t_users_permissions(user_id, permissions_id)
-VALUE
+VALUES
     (1,1),
     (2,1),
     (2,2),
@@ -36,7 +36,7 @@ VALUE
     (3,2);
 
 INSERT INTO t_news_category(name)
-VALUE
+VALUES
     ('Sport'),
     ('Political'),
     ('Business'),
@@ -47,7 +47,7 @@ VALUE
     ('Art');
 
 INSERT INTO t_posts(title, content, post_time, user_id, news_category_id)
-    VALUE
+    VALUES
     ('Kazakh Prime Minister Proposes Measures to Develop Aktobe Region',
      'Kazakh Prime Minister Alikhan Smailov instructed to speed up the reconstruction of the
 Aktobe-Karabutak-Ulgaisyn highway, a part of the Western Europe – Western China International Road Corridor, during
@@ -239,6 +239,6 @@ where young artists create something new and contribute to making the world a be
      '2023-08-12 21:32:22', 3, 8);
 
 INSERT INTO t_comments(comment,comment_time,user_id,post_id)
-VALUE
+VALUES
     ('GOOD', '2023-08-12 21:32:22', 1, 2);
 
